@@ -1,2 +1,2 @@
-# BasidiDati_EsercizioBONUS_2
-Risoluzione esercizio BONUS 2 
+# Esercizio BONUS_2
+Risoluzione esercizio per DBMS NoSQL MongoDB
