@@ -128,30 +128,30 @@ db.createCollection("Partecipazioni");
 
 // Converto tutti i metri quadri per avere la stessa unità di misura come per Edizioni
 db.Partecipazioni.insertMany([
-    { espositore: "E001", edizione: "ED01", sup: 1200, voto: 8 },
-    { espositore: "E001", edizione: "ED02", sup: 1600, voto: 9 },
-    { espositore: "E001", edizione: "ED04", sup: 1000, voto: 6 },
-    { espositore: "E001", edizione: "ED08", sup: 900, voto: 7 },
+    { espositore: "E001", edizione: "ED01", sup: 12, voto: 8 },
+    { espositore: "E001", edizione: "ED02", sup: 16, voto: 9 },
+    { espositore: "E001", edizione: "ED04", sup: 10, voto: 6 },
+    { espositore: "E001", edizione: "ED08", sup: 9, voto: 7 },
 
-    { espositore: "E002", edizione: "ED05", sup: 4000, voto: 6 },
+    { espositore: "E002", edizione: "ED05", sup: 40, voto: 6 },
 
-    { espositore: "E003", edizione: "ED06", sup: 3000, voto: 9 },
-    { espositore: "E003", edizione: "ED04", sup: 900, voto: 5 },
+    { espositore: "E003", edizione: "ED06", sup: 30, voto: 9 },
+    { espositore: "E003", edizione: "ED04", sup: 9, voto: 5 },
 
-    { espositore: "E004", edizione: "ED04", sup: 900, voto: 10 },
-    { espositore: "E004", edizione: "ED02", sup: 900, voto: 6 },
+    { espositore: "E004", edizione: "ED04", sup: 9, voto: 10 },
+    { espositore: "E004", edizione: "ED02", sup: 9, voto: 6 },
 
-    { espositore: "E005", edizione: "ED05", sup: 6000, voto: 7 },
-    { espositore: "E005", edizione: "ED09", sup: 2000 },
+    { espositore: "E005", edizione: "ED05", sup: 60, voto: 7 },
+    { espositore: "E005", edizione: "ED09", sup: 20 },
 
-    { espositore: "E006", edizione: "ED07", sup: 2500 },
-    { espositore: "E006", edizione: "ED08", sup: 1200, voto: 8 },
+    { espositore: "E006", edizione: "ED07", sup: 25 },
+    { espositore: "E006", edizione: "ED08", sup: 12, voto: 8 },
 
-    { espositore: "E007", edizione: "ED02", sup: 5000, voto: 7 },
-    { espositore: "E007", edizione: "ED08", sup: 4000, voto: 9 },
-    { espositore: "E007", edizione: "ED011", sup: 3000, voto: 4 },
+    { espositore: "E007", edizione: "ED02", sup: 50, voto: 7 },
+    { espositore: "E007", edizione: "ED08", sup: 40, voto: 9 },
+    { espositore: "E007", edizione: "ED011", sup: 30, voto: 4 },
 
-    { espositore: "E008", edizione: "ED06", sup: 1500, voto: 8 }
+    { espositore: "E008", edizione: "ED06", sup: 15, voto: 8 }
 ]);
 
 
@@ -197,10 +197,9 @@ const NUM9 = db.Partecipazioni.aggregate([
     }}
 ]);
 
-
 //Ciclo i risultati per stampare le stringhe
-NUM9.forEach(fiera => {
-    print("[PUNTO 9] Fiera: ${fiera._id}, Media voti: ${fiera.media}");
+NUM9.forEach(res => {
+    print("[PUNTO 9] Fiera: " + res._id + ", Media voti: " + res.media");
 });
 
 
@@ -216,17 +215,30 @@ NUM9.forEach(fiera => {
        */
 
 const NUM10 = db.Partecipazioni.aggregate([
-    {$lookup:{
-        from: "",
-        localField: "",
-        foreignField: "",
-        as: ""
+    { $lookup:{  //Recupero i dati dell'edizione
+        from: "Edizioni",
+        localField: "edizione",
+        foreignField: "codice",
+        as: "dati_edizione"
     }},
-    ...
+    { $unwind: "$dati_edizione"},
+    { $group: {  //Raggruppo per città e calcolo la somma delle superfici
+        _id: "$dati_edizione.citta",
+        sumSup: { $sum: "$sup"}
+    }},
+    { $sort: { sumSup: -1}}
 ]);
 
 
-/*Ciclo i risultati per stampare le stringhe
-NUM10.forEach(fiera => {
-    print("[PUNTO 10] Città: X, Superficie stand: Z m2}");
-}); */
+//Ciclo i risultati per stampare le stringhe
+NUM10.forEach(res => {
+    print("[PUNTO 10] Città: " + res._id + ", Superficie stand: " + res.sumSup + " m2");
+});
+
+/*
+MT.q per Milano = 136
+MT.q per Verona = 100
+MT.q per Bologna = 85
+MT.q per Roma = 30
+MT.q per Torino = 20
+*/
