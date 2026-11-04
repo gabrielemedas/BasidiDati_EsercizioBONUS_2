@@ -66,7 +66,7 @@ db.Edizioni.insertMany([
     { codice: "ED08", fiera: "TechDays", anno: 2025, citta: "Milano", regione: "Lombardia", sup_totale: 2000, stato: "Conclusa" },
     { codice: "ED09", fiera: "RoboWorld", anno: 2026, citta: "Torino", regione: "Piemonte", stato: "Programmata" },
     { codice: "ED10", fiera: "Info2000", anno: 2026, citta: "Bologna", regione: "Emilia-Romagna", stato: "Programmata" },
-    { codice: "ED11", fiera: "GameFest", anno: 2025, citta: "Roma", regione: "Lazio", sup_totale: 700, stato: "Conclusa" }
+    { codice: "ED11", fiera: "MarmoMat", anno: 2025, citta: "Roma", regione: "Lazio", sup_totale: 700, stato: "Conclusa" }
 ]);
 
 
@@ -235,7 +235,7 @@ NUM10.forEach(res => {
     print("[PUNTO 10] Città: " + res._id + ", Superficie stand: " + res.sumSup + " m2");
 });
 
-/*
+/* Verifica
 MT.q per Milano = 136
 MT.q per Verona = 100
 MT.q per Bologna = 85
