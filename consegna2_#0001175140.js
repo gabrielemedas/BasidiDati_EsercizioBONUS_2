@@ -149,7 +149,7 @@ db.Partecipazioni.insertMany([
 
     { espositore: "E007", edizione: "ED02", sup: 50, voto: 7 },
     { espositore: "E007", edizione: "ED08", sup: 40, voto: 9 },
-    { espositore: "E007", edizione: "ED011", sup: 30, voto: 4 },
+    { espositore: "E007", edizione: "ED11", sup: 30, voto: 4 },
 
     { espositore: "E008", edizione: "ED06", sup: 15, voto: 8 }
 ]);
@@ -172,6 +172,9 @@ while (cursor.hasNext()) {  //Ciclo il cursore ed effettuo l'incremento
     cursor.next();
     NUM8++;
 }
+
+/* Oppure più compresso, converto il cursore in un array e utilizzo la keyword length per contare gli elementi
+const NUM8 = cursor.toArray().length; */
 
 print("[PUNTO 8] Numero di partecipazioni dell'espositore E001 a edizioni svolte a Milano: " + NUM8);
 
@@ -234,11 +237,3 @@ const NUM10 = db.Partecipazioni.aggregate([
 NUM10.forEach(res => {
     print("[PUNTO 10] Città: " + res._id + ", Superficie stand: " + res.sumSup + " m2");
 });
-
-/* Verifica
-MT.q per Milano = 136
-MT.q per Verona = 100
-MT.q per Bologna = 85
-MT.q per Roma = 30
-MT.q per Torino = 20
-*/
