@@ -1,18 +1,16 @@
-//SCELTE DI MODELLAZIONE (max 10 righe)
-/*
+/* SCELTE DI MODELLAZIONE e DIFFERENZE ALLO SCHEMA RELAZIONALE
+Le scelte di modellazione del db adottate sono pressochè simili alle collezioni fornite dalla traccia.
+Non ho introdotto altri campi o collezioni perchè non ritenevo necessari.
 
-*/
+Dalle collezioni fornite, sono evidenti dei campi array per Recapiti (in ESPOSITORI) e Padiglioni (in FIERE).
+Una modellazione tutt'altro che possibile in uno schema relazionale a struttura "rigida" come SQL.
+Mongo DB per questo è stato molto utile perchè ha permesso di modellare recapiti e padiglioni multipli in un array :
+- Creare più recapiti in ESPOSITORI non è un problema perchè la struttura è flessibile per aggiungere più elementi ad uno stesso campo a differenza di SQL.
+- Stessa cosa per l'elenco dei padiglioni in FIERE, struttura flessibile quindi aggiungiamo quandi padiglioni abbiamo bisogno.
 
-/* DETTAGLI IMPLEMENTATIVI
-OSSERVAZIONI DAL PASSO PRELIMINARE:
-    - Creare più recapiti in ESPOSITORI non deve essere un problema perchè la struttura è flessibile per aggiungere "attributi" a differenza di SQL.
-    - Stessa cosa per l'elenco dei padiglioni in FIERE, struttura flessibile quindi aggiungiamo quandi padiglioni abbiamo bisogno.
-    - Vincolo di integrità referenziale in EDIZIONI: la fiera di riferimento (Edizioni.nome_fiera) corrisponde al nome della fiera (Fiere.nome), va gestito!
-
-OSSERVAZIONI DALLE TABELLE FORNITE:
-    - Espositori: il campo dei "recapiti" è un array (email e/o telefono)
-    - Fiere: il campo dei "padiglioni" è un array (padiglioni corrispondenti)
-    - Edizioni: il campo "fiera" è il vincolo di integrità referenziale con Fiere
+Per quanto riguarda le PARTECIPAZIONI e Voti ho strutturato la collezione esattamente come indicata nella traccia senza aggiunta di altri campi inutili.
+È evidente che le PARTECIPAZIONI sono in relazione con ESPOSITORI e EDIZIONI quindi quando ho eseguito le ultime query ho dovuto gestire i vincoli di integrità referenziale.
+I collegamenti con le altre collezioni, citate sopra, le ho gestire all'interno delle query, tra i vari modi (Embedding, ciclo while, Lookup), con l'operatore di Aggregate $lookup.
 */
 
 // 0) CREAZIONE DB
@@ -106,9 +104,8 @@ print("[PUNTO 5] Numero di edizioni presenti dopo filtraggio: " + NUM5);
 
 
 
-/* 6) Aggiornare  il  documento  relativo  all’espositore  con  codice  pari  a  “E002”.  Aggiungere  i 
-      seguenti recapiti (email: info@ceramicherinaldi.it, telefono: 0536123456). Output. Stampare a 
-    video il documento JSON modificato [usare la funzione printjson]. */
+/* 6) Aggiornare  il  documento  relativo  all’espositore  con  codice  pari  a  “E002”.
+      Aggiungere i seguenti recapiti (email: info@ceramicherinaldi.it, telefono: 0536123456). */
 
 // Utilizzo $push invece di $set perchè devo aggiungere dei recapiti non aggiornarli/modificarli.
 // Nel caso in cui avessi usato $set e l'array recapiti era già popolato, questo comando avrebbe sovrascritto il contenuto.
@@ -118,11 +115,12 @@ printjson(espositore);
 
 
 
-/* 7) Si  vuole  tenere  traccia  delle  partecipazioni  degli  espositori  alle  edizioni  delle  fiere.  Per  ogni 
-      partecipazione sono noti l’edizione, i metri quadri dello stand e, se presente, il voto (da 1 a 10) 
-      assegnato dalla giuria. Le partecipazioni da inserire sono presenti in Tabella 4 (vedi pagina 5). 
-      Come per l’esercizio 0, occorre: (i) trasformare i dati in input in documenti JSON; (ii) inserire i 
-      dati nelle opportune collezioni, creandone di nuove oppure usando quelle già presenti nel database. */
+/* 7) Si vuole tenere traccia delle partecipazioni degli espositori alle edizioni delle fiere.
+      Per ogni partecipazione sono noti l’edizione, i metri quadri dello stand e, se presente, il voto (da 1 a 10) assegnato dalla giuria.
+      Le partecipazioni da inserire sono presenti in Tabella 4 (vedi pagina 5). 
+      Come per l’esercizio 0, occorre:
+        (i) trasformare i dati in input in documenti JSON;
+        (ii) inserire i dati nelle opportune collezioni, creandone di nuove oppure usando quelle già presenti nel database. */
 db.Partecipazioni.drop();
 db.createCollection("Partecipazioni");
 
@@ -172,7 +170,6 @@ while (cursor.hasNext()) {  //Ciclo il cursore ed effettuo l'incremento
     cursor.next();
     NUM8++;
 }
-
 /* Oppure più compresso, converto il cursore in un array e utilizzo la keyword length per contare gli elementi
 const NUM8 = cursor.toArray().length; */
 
@@ -180,11 +177,8 @@ print("[PUNTO 8] Numero di partecipazioni dell'espositore E001 a edizioni svolte
 
 
 
-/* 9) Scrivere la query che calcola, per ogni fiera, la media dei voti ottenuti dagli espositori in tutte le 
-      sue edizioni (le partecipazioni senza voto non vanno considerate). */
-
-// Osservazione_1: SportExpo e RoboWorld si ripetono 1 sola volta in Partecipazioni, in più non possiedono voto. Non appariranno nella stampa.
-// Osservazione_2: Nel fare la query esce un risultato di 4 non c'è la fiera GameFest.
+/*9) Scrivere la query che calcola, per ogni fiera, la media dei voti ottenuti dagli espositori in tutte le sue edizioni (le partecipazioni senza voto non vanno considerate).
+     Osservazione: SportExpo e RoboWorld si ripetono 1 sola volta in Partecipazioni, in più non possiedono voto. Non appariranno nella stampa. */
 const NUM9 = db.Partecipazioni.aggregate([
     { $match: { voto: { $exists: true}}},  //Escludo le partecipazioni senza voto
     { $lookup: {  //Recupero i dati dell'edizione per sapere a quale fiera appartiene ("Edizioni.fiera")
@@ -200,22 +194,17 @@ const NUM9 = db.Partecipazioni.aggregate([
     }}
 ]);
 
-//Ciclo i risultati per stampare le stringhe
+//Ciclo i risultati con il costrutto forEach per stampare le righe
 NUM9.forEach(res => {
     print("[PUNTO 9] Fiera: " + res._id + ", Media voti: " + res.media");
 });
 
 
 
-/* 10) Scrivere la query che calcola, per ogni città in cui si è svolta almeno un’edizione, la superficie
-       complessiva (in m2) occupata dagli stand degli espositori, sommando i metri quadri di tutte le
-       partecipazioni alle edizioni ospitate da quella città (considerare solo le edizioni presenti nel
-       database dopo il punto 5). Ordinare il risultato per superficie decrescente. 
-       
-        Output: Stampare a video, per ciascuna città, il seguente messaggio:
-        [PUNTO 10] Città: X, Superficie stand: Z m2
-        dove X è il nome della città, Z la superficie complessiva in m2.
-       */
+/* 10) Scrivere la query che calcola, per ogni città in cui si è svolta almeno un’edizione,
+       la superficie complessiva (in m2) occupata dagli stand degli espositori,
+       sommando i metri quadri di tutte le partecipazioni alle edizioni ospitate da quella città (considerare solo le edizioni presenti nel database dopo il punto 5).
+       Ordinare il risultato per superficie decrescente. */
 
 const NUM10 = db.Partecipazioni.aggregate([
     { $lookup:{  //Recupero i dati dell'edizione
@@ -232,8 +221,6 @@ const NUM10 = db.Partecipazioni.aggregate([
     { $sort: { sumSup: -1}}
 ]);
 
-
-//Ciclo i risultati per stampare le stringhe
 NUM10.forEach(res => {
     print("[PUNTO 10] Città: " + res._id + ", Superficie stand: " + res.sumSup + " m2");
 });
