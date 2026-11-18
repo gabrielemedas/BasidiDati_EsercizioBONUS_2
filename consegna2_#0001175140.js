@@ -196,7 +196,7 @@ const NUM9 = db.Partecipazioni.aggregate([
 
 //Ciclo i risultati con il costrutto forEach per stampare le righe
 NUM9.forEach(res => {
-    print("[PUNTO 9] Fiera: " + res._id + ", Media voti: " + res.media");
+    print("[PUNTO 9] Fiera: " + res._id + ", Media voti: " + res.media);
 });
 
 
